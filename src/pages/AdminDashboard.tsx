@@ -17,10 +17,7 @@ const AdminDashboard = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [loading, setLoading] = useState(true);
   const { cylinders, orders, pickups, setCylinders, setOrders, setPickups } = useStore();
-  const [showEmptyModal, setShowEmptyModal] = useState(false);
-  const [showFilledModal, setShowFilledModal] = useState(false);
-  const [showAssignedModal, setShowAssignedModal] = useState(false);
-  const [showTotalModal, setShowTotalModal] = useState(false);
+  
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
