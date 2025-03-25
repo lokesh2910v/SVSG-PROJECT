@@ -18,13 +18,16 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const { cylinders, orders, pickups, setCylinders, setOrders, setPickups } = useStore();
   const [showEmptyModal, setShowEmptyModal] = useState(false);
-const [showFilledModal, setShowFilledModal] = useState(false);
-const [showAssignedModal, setShowAssignedModal] = useState(false);
-const [showTotalModal, setShowTotalModal] = useState(false);
+  const [showFilledModal, setShowFilledModal] = useState(false);
+  const [showAssignedModal, setShowAssignedModal] = useState(false);
+  const [showTotalModal, setShowTotalModal] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
+
+  const [showCylinderDetails, setShowCylinderDetails] = useState(false);
+  const [cylinderDetails, setCylinderDetails] = useState([]);
 
   // Add this new function to filter cylinders
   const filteredCylinders = () => {
@@ -83,12 +86,18 @@ const [showTotalModal, setShowTotalModal] = useState(false);
   };
   const stats = getStatistics();
 
+  const handleCardClick = (filterCondition) => {
+    const filteredCyls = filteredCylinders().filter(filterCondition);
+    setCylinderDetails(filteredCyls);
+    setShowCylinderDetails(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-          <nav className="bg-white shadow-sm relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="relative bg-white shadow-sm">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           {/* Top Bar */}
-          <div className="py-4 flex justify-between items-center border-b">
+          <div className="flex justify-between items-center py-4 border-b">
             <div className="flex items-center">
               <Cylinder className="w-8 h-8 text-blue-600" />
               <span className="ml-2 text-xl font-semibold">Admin Dashboard</span>
@@ -115,23 +124,23 @@ const [showTotalModal, setShowTotalModal] = useState(false);
                   setSearchTerm(e.target.value);
                   setShowSearchResults(true);
                 }}
-                className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm shadow-sm"
+                className="p-3 pl-10 w-full text-sm rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
 
               {/* Search Results Dropdown */}
               {showSearchResults && searchTerm && (
-                <div className="absolute mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                <div className="overflow-y-auto absolute z-50 mt-2 w-full max-h-96 bg-white rounded-lg border border-gray-200 shadow-lg">
                   <div className="p-2">
                     {filteredCylinders().length > 0 ? (
                       filteredCylinders().map((cylinder) => (
                         <div 
                           key={cylinder.id} 
-                          className="p-3 hover:bg-gray-50 rounded-md transition-colors duration-150 cursor-pointer"
+                          className="p-3 rounded-md transition-colors duration-150 cursor-pointer hover:bg-gray-50"
                         >
                           <div className="flex justify-between items-start">
                             <div>
@@ -173,28 +182,31 @@ const [showTotalModal, setShowTotalModal] = useState(false);
         />
       )}
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="py-12 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full border-b-2 border-blue-600 animate-spin"></div>
             <p className="mt-4 text-gray-600">Loading dashboard...</p>
           </div>
         ) : (
           <div className="px-4 py-6 sm:px-0">
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 mb-6">
-              <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-2 gap-4 mb-6 sm:gap-6 lg:grid-cols-4">
+              <div
+                onClick={() => handleCardClick(c => c.status === 'empty' && c.location === 'Warehouse')}
+                className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-lg transition-shadow duration-300 hover:shadow-xl cursor-pointer"
+              >
                 <div className="p-6">
                   <div className="flex items-center">
-                    <div className="p-3 rounded-full bg-red-50">
-                      <Package className="h-7 w-7 text-red-600" />
+                    <div className="p-3 bg-red-50 rounded-full">
+                      <Package className="w-7 h-7 text-red-600" />
                     </div>
-                    <div className="ml-4 flex-1">
+                    <div className="flex-1 ml-4">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate mb-1">
+                        <dt className="mb-1 text-sm font-medium text-gray-500 truncate">
                           Empty
                         </dt>
-                        <dd className="text-2xl sm:text-3xl font-bold text-red-600">
+                        <dd className="text-2xl font-bold text-red-600 sm:text-3xl">
                           {stats.emptyCylinders}
                         </dd>
                       </dl>
@@ -203,18 +215,21 @@ const [showTotalModal, setShowTotalModal] = useState(false);
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <div
+                onClick={() => handleCardClick(c => c.status === 'filled' && c.location === 'Warehouse')}
+                className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-lg transition-shadow duration-300 hover:shadow-xl cursor-pointer"
+              >
                 <div className="p-6">
                   <div className="flex items-center">
-                    <div className="p-3 rounded-full bg-green-50">
-                      <Package className="h-7 w-7 text-green-600" />
+                    <div className="p-3 bg-green-50 rounded-full">
+                      <Package className="w-7 h-7 text-green-600" />
                     </div>
-                    <div className="ml-4 flex-1">
+                    <div className="flex-1 ml-4">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate mb-1">
+                        <dt className="mb-1 text-sm font-medium text-gray-500 truncate">
                           Filled
                         </dt>
-                        <dd className="text-2xl sm:text-3xl font-bold text-green-600">
+                        <dd className="text-2xl font-bold text-green-600 sm:text-3xl">
                           {stats.filledCylinders}
                         </dd>
                       </dl>
@@ -223,18 +238,21 @@ const [showTotalModal, setShowTotalModal] = useState(false);
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <div
+                onClick={() => handleCardClick(c => c.location === 'Customer')}
+                className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-lg transition-shadow duration-300 hover:shadow-xl cursor-pointer"
+              >
                 <div className="p-6">
                   <div className="flex items-center">
-                    <div className="p-3 rounded-full bg-blue-50">
-                      <Users className="h-7 w-7 text-blue-600" />
+                    <div className="p-3 bg-blue-50 rounded-full">
+                      <Users className="w-7 h-7 text-blue-600" />
                     </div>
-                    <div className="ml-4 flex-1">
+                    <div className="flex-1 ml-4">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate mb-1">
+                        <dt className="mb-1 text-sm font-medium text-gray-500 truncate">
                           Assigned
                         </dt>
-                        <dd className="text-2xl sm:text-3xl font-bold text-blue-600">
+                        <dd className="text-2xl font-bold text-blue-600 sm:text-3xl">
                           {stats.customerCylinders}
                         </dd>
                       </dl>
@@ -243,18 +261,21 @@ const [showTotalModal, setShowTotalModal] = useState(false);
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <div
+                onClick={() => handleCardClick(() => true)}
+                className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-lg transition-shadow duration-300 hover:shadow-xl cursor-pointer"
+              >
                 <div className="p-6">
                   <div className="flex items-center">
-                    <div className="p-3 rounded-full bg-purple-50">
-                      <Package className="h-7 w-7 text-purple-600" />
+                    <div className="p-3 bg-purple-50 rounded-full">
+                      <Package className="w-7 h-7 text-purple-600" />
                     </div>
-                    <div className="ml-4 flex-1">
+                    <div className="flex-1 ml-4">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate mb-1">
-                          Total
+                        <dt className="mb-1 text-sm font-medium text-gray-500 truncate">
+                          Total Cylinders
                         </dt>
-                        <dd className="text-2xl sm:text-3xl font-bold text-purple-600">
+                        <dd className="text-2xl font-bold text-purple-600 sm:text-3xl">
                           {stats.totalCylinders}
                         </dd>
                       </dl>
@@ -264,55 +285,112 @@ const [showTotalModal, setShowTotalModal] = useState(false);
               </div>
             </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 mb-6">
-            <button
-              onClick={() => setShowOrderForm(true)}
-              className="p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              <span className="text-sm sm:text-base">New Order</span>
-            </button>
-            <button
-              onClick={() => setShowPickupForm(true)}
-              className="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              <span className="text-sm sm:text-base">New Pickup</span>
-            </button>
-            <button
-              onClick={() => setShowUserForm(true)}
-              className="p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              <span className="text-sm sm:text-base">Add User</span>
-            </button>
-            <button
-              onClick={() => setShowCylinderForm(true)}
-              className="p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              <span className="text-sm sm:text-base">Add Cylinder</span>
-            </button>
-          </div>
-                      {/* History Button */}
-                      <div className="mb-6">
+            {/* Popup for cylinder details */}
+            {showCylinderDetails && (
+              <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black bg-opacity-50">
+                <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+                  <div className="flex justify-between items-center p-4 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Cylinder Details</h3>
+                    <button
+                      onClick={() => setShowCylinderDetails(false)}
+                      className="text-gray-400 hover:text-gray-500"
+                    >
+                      <span className="text-2xl">×</span>
+                    </button>
+                  </div>
+                  <div className="p-6 overflow-y-auto max-h-[calc(80vh-8rem)]">
+                    {cylinderDetails.length > 0 ? (
+                      cylinderDetails.map((cylinder) => (
+                        <div key={cylinder.id} className="p-4 hover:bg-gray-100">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                Serial Number: {cylinder.serial_number}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                Location: {cylinder.location}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                cylinder.status === 'empty' ? 'bg-red-100 text-red-800' :
+                                cylinder.status === 'filled' ? 'bg-green-100 text-green-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}>
+                                {cylinder.status}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-gray-500">
+                        No cylinders found
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-end p-4 border-t border-gray-200">
+                    <button
+                      onClick={() => setShowCylinderDetails(false)}
+                      className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-4 mb-6 sm:gap-6 lg:grid-cols-4">
+              <button
+                onClick={() => setShowOrderForm(true)}
+                className="flex justify-center items-center p-4 text-white bg-blue-600 rounded-lg shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl"
+              >
+                <Plus className="mr-2 w-5 h-5" />
+                <span className="text-sm sm:text-base">New Order</span>
+              </button>
+              <button
+                onClick={() => setShowPickupForm(true)}
+                className="flex justify-center items-center p-4 text-white bg-green-600 rounded-lg shadow-lg transition-all duration-300 hover:bg-green-700 hover:shadow-xl"
+              >
+                <Plus className="mr-2 w-5 h-5" />
+                <span className="text-sm sm:text-base">New Pickup</span>
+              </button>
+              <button
+                onClick={() => setShowUserForm(true)}
+                className="flex justify-center items-center p-4 text-white bg-purple-600 rounded-lg shadow-lg transition-all duration-300 hover:bg-purple-700 hover:shadow-xl"
+              >
+                <Plus className="mr-2 w-5 h-5" />
+                <span className="text-sm sm:text-base">Add User</span>
+              </button>
+              <button
+                onClick={() => setShowCylinderForm(true)}
+                className="flex justify-center items-center p-4 text-white bg-purple-600 rounded-lg shadow-lg transition-all duration-300 hover:bg-purple-700 hover:shadow-xl"
+              >
+                <Plus className="mr-2 w-5 h-5" />
+                <span className="text-sm sm:text-base">Add Cylinder</span>
+              </button>
+            </div>
+
+            {/* History Button */}
+            <div className="mb-6">
               <button
                 onClick={() => setShowHistory(true)}
-                className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
+                className="flex justify-center items-center px-6 py-3 w-full text-white bg-indigo-600 rounded-lg shadow-lg transition-all duration-300 sm:w-auto hover:bg-indigo-700 hover:shadow-xl"
               >
-                <ClipboardList className="w-5 h-5 mr-2" />
+                <ClipboardList className="mr-2 w-5 h-5" />
                 <span className="text-sm sm:text-base">View Cylinder History</span>
               </button>
             </div>
 
             {/* History Modal */}
             {showHistory && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black bg-opacity-50">
                 <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
-                  <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                      <ClipboardList className="w-5 h-5 mr-2 text-indigo-600" />
+                  <div className="flex justify-between items-center p-4 border-b border-gray-200">
+                    <h3 className="flex items-center text-lg font-semibold text-gray-900">
+                      <ClipboardList className="mr-2 w-5 h-5 text-indigo-600" />
                       Cylinder History
                     </h3>
                     <button
@@ -324,18 +402,18 @@ const [showTotalModal, setShowTotalModal] = useState(false);
                   </div>
                   <div className="p-6 overflow-y-auto max-h-[calc(80vh-8rem)]">
                     <div className="space-y-4">
-                      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                      <div className="flex flex-col gap-4 mb-4 sm:flex-row">
                         <input
                           type="text"
                           placeholder="Search by serial number..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          className="flex-1 p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         />
                         <select
                           value={statusFilter}
                           onChange={(e) => setStatusFilter(e.target.value)}
-                          className="w-full sm:w-auto p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          className="p-2 w-full rounded-lg border border-gray-300 sm:w-auto focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         >
                           <option value="">All Status</option>
                           <option value="empty">Empty</option>
@@ -377,14 +455,14 @@ const [showTotalModal, setShowTotalModal] = useState(false);
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 border-t border-gray-200 flex justify-end">
+                  <div className="flex justify-end p-4 border-t border-gray-200">
                     <button
                       onClick={() => {
                         setShowHistory(false);
                         setSearchTerm('');
                         setStatusFilter('');
                       }}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                      className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
                     >
                       Close
                     </button>
@@ -395,8 +473,8 @@ const [showTotalModal, setShowTotalModal] = useState(false);
 
             {/* Forms */}
             {showOrderForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                <div className="max-w-md w-full">
+              <div className="flex fixed inset-0 justify-center items-center p-4 bg-black bg-opacity-50">
+                <div className="w-full max-w-md">
                   <OrderForm
                     availableCylinders={cylinders.filter(c => c.status === 'empty' && c.location === 'Warehouse')}
                     onOrderComplete={() => {
@@ -410,8 +488,8 @@ const [showTotalModal, setShowTotalModal] = useState(false);
             )}
 
             {showPickupForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                <div className="max-w-md w-full">
+              <div className="flex fixed inset-0 justify-center items-center p-4 bg-black bg-opacity-50">
+                <div className="w-full max-w-md">
                   <PickupForm
                     customerCylinders={cylinders.filter(c => c.location === 'Customer' && c.status === 'delivered')}
                     onPickupComplete={() => {
@@ -425,8 +503,8 @@ const [showTotalModal, setShowTotalModal] = useState(false);
             )}
 
             {showUserForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                <div className="max-w-md w-full">
+              <div className="flex fixed inset-0 justify-center items-center p-4 bg-black bg-opacity-50">
+                <div className="w-full max-w-md">
                   <UserForm
                     onUserCreated={() => {
                       setShowUserForm(false);
@@ -439,8 +517,8 @@ const [showTotalModal, setShowTotalModal] = useState(false);
             )}
 
             {showCylinderForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                <div className="max-w-md w-full">
+              <div className="flex fixed inset-0 justify-center items-center p-4 bg-black bg-opacity-50">
+                <div className="w-full max-w-md">
                   <CylinderForm
                     onCylinderAdded={() => {
                       setShowCylinderForm(false);
