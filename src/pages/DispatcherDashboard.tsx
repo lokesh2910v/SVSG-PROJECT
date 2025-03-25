@@ -110,144 +110,127 @@ const DispatcherDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Cylinder className="w-8 h-8 text-blue-600" />
-              <span className="ml-2 text-xl font-semibold">Dispatcher Dashboard</span>
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
+    <nav className="bg-white shadow-md sticky top-0 z-10 py-4">
+      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <div className="flex items-center space-x-3">
+          <Cylinder className="w-10 h-10 text-blue-600" />
+          <span className="text-2xl font-bold text-gray-800">Dispatcher Dashboard</span>
+        </div>
+        <button
+          onClick={() => {
+            localStorage.removeItem('user');
+            navigate('/login');
+          }}
+          className="px-5 py-2 text-sm font-semibold text-white bg-red-500 rounded-md hover:bg-red-700 transition"
+        >
+          Logout
+        </button>
+      </div>
+    </nav>
+
+    <main className="max-w-7xl mx-auto py-8 px-6">
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
+          <p className="mt-4 text-gray-700 font-medium">Loading dashboard...</p>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {/* Deliveries Section */}
+          <div className="bg-white shadow-lg rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-gray-800 flex items-center mb-4">
+              <Truck className="h-6 w-6 mr-2 text-blue-500" />
+              Pending Deliveries
+            </h3>
+
+            <div className="space-y-4">
+              {orders.length > 0 ? (
+                orders.map(order => (
+                  <div
+                    key={order.order_id}
+                    className="bg-blue-50 p-4 rounded-lg flex justify-between items-center shadow-sm hover:shadow-md transition"
+                  >
+                    <div>
+                      <p className="font-medium text-lg text-gray-800">{order.customer_name}</p>
+                      <p className="text-sm text-gray-600">Phone: {order.customer_phone}</p>
+                      <p className="text-sm text-gray-600">{order.customer_address}</p>
+                      <p className="text-sm text-gray-700 font-medium">Cylinder: {order.cylinder_serial}</p>
+                    </div>
+                    <button
+                      onClick={() => markAsDelivered(order)}
+                      disabled={processingItem === order.order_id}
+                      className="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700 transition disabled:opacity-50 flex items-center"
+                    >
+                      {processingItem === order.order_id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          Mark as Delivered
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">No pending deliveries</p>
+              )}
             </div>
-            <button
-              onClick={() => {
-                localStorage.removeItem('user');
-                navigate('/login');
-              }}
-              className="ml-4 px-4 py-2 text-sm text-red-600 hover:text-red-800"
-            >
-              Logout
-            </button>
+          </div>
+
+          {/* Pickups Section */}
+          <div className="bg-white shadow-lg rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-gray-800 flex items-center mb-4">
+              <ArrowDownCircle className="h-6 w-6 mr-2 text-blue-500" />
+              Pending Pickups
+            </h3>
+
+            <div className="space-y-4">
+              {pickups.length > 0 ? (
+                pickups.map(pickup => (
+                  <div
+                    key={pickup.pickup_id}
+                    className="bg-blue-50 p-4 rounded-lg flex justify-between items-center shadow-sm hover:shadow-md transition"
+                  >
+                    <div>
+                      <p className="font-medium text-lg text-gray-800">{pickup.customer_name}</p>
+                      <p className="text-sm text-gray-600">Cylinder: {pickup.cylinder_serial}</p>
+                      <p className="text-sm text-gray-600">Phone: {pickup.customer_phone}</p>
+                      <p className="text-sm text-gray-700 font-medium">{pickup.customer_address}</p>
+                    </div>
+                    <button
+                      onClick={() => markAsPickedUp(pickup)}
+                      disabled={processingItem === pickup.pickup_id}
+                      className="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700 transition disabled:opacity-50 flex items-center"
+                    >
+                      {processingItem === pickup.pickup_id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          Mark as Picked Up
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">No pending pickups</p>
+              )}
+            </div>
           </div>
         </div>
-      </nav>
+      )}
+    </main>
+  </div>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading dashboard...</p>
-          </div>
-        ) : (
-          <div className="px-4 py-6 sm:px-0 space-y-6">
-            {/* Deliveries Section */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center mb-4">
-                  <Truck className="h-5 w-5 mr-2" />
-                  Pending Deliveries
-                </h3>
-
-                <div className="space-y-4">
-                  {orders.length > 0 ? (
-                    orders.map(order => (
-                      <div
-                        key={order.order_id}
-                        className="bg-gray-50 rounded-lg p-4 flex justify-between items-center"
-                      >
-                        <div>
-                          <p className="font-medium">{order.customer_name}</p>
-                          <p className="text-sm text-gray-500">
-                            Phone: {order.customer_phone}
-                          </p>
-                          <p className="text-sm text-gray-500">{order.customer_address}</p>
-                          <p className="text-sm text-gray-500">
-                            Cylinder: {order.cylinder_serial}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => markAsDelivered(order)}
-                          disabled={processingItem === order.order_id}
-                          className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-                        >
-                          {processingItem === order.order_id ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              Processing...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Mark as Delivered
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-center py-4">
-                      No pending deliveries
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Pickups Section */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center mb-4">
-                  <ArrowDownCircle className="h-5 w-5 mr-2" />
-                  Pending Pickups
-                </h3>
-
-                <div className="space-y-4">
-                  {pickups.length > 0 ? (
-                    pickups.map(pickup => (
-                      <div
-                        key={pickup.pickup_id}
-                        className="bg-gray-50 rounded-lg p-4 flex justify-between items-center"
-                      >
-                        <div>
-                          <p className="font-medium">{pickup.customer_name}</p>
-                          <p className="text-sm text-gray-500">
-                            Cylinder: {pickup.cylinder_serial}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Phone: {pickup.customer_phone}
-                          </p>
-                          <p className="text-sm text-gray-500">{pickup.customer_address}</p>
-                        </div>
-                        <button
-                          onClick={() => markAsPickedUp(pickup)}
-                          disabled={processingItem === pickup.pickup_id}
-                          className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-                        >
-                          {processingItem === pickup.pickup_id ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              Processing...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Mark as Picked Up
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-center py-4">
-                      No pending pickups
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
   );
 };
 
